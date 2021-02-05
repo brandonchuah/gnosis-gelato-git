@@ -1,7 +1,8 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { Button, Loader, Title } from '@gnosis.pm/safe-react-components';
+import { Button, Loader, Title, Layout } from '@gnosis.pm/safe-react-components';
 import { useSafeAppsSDK } from '@gnosis.pm/safe-apps-react-sdk';
+import Setup from './components/Setup';
 
 const Container = styled.form`
   margin-bottom: 2rem;
@@ -17,6 +18,16 @@ const Container = styled.form`
 const App: React.FC = () => {
   const { sdk, safe } = useSafeAppsSDK();
   const [submitting, setSubmitting] = useState(false);
+  const [setupDone, setSetupDone] = useState(false);
+
+  const [ethBalance, setEthBalance] = useState(0);
+
+  useEffect(() => {
+    getBalance()
+    // return () => {
+    //   cleanup
+    // }
+  }, [])
 
   const submitTx = useCallback(async () => {
     setSubmitting(true);
@@ -39,30 +50,32 @@ const App: React.FC = () => {
     setSubmitting(false);
   }, [safe, sdk]);
 
+  const getBalance = async() =>{
+    const temp = await sdk.getSafeInfo();
+    const address = temp.safeAddress;
+    const res = await sdk.eth.getBalance([address]);
+    const balance = parseFloat(res);
+    setEthBalance(balance);
+}
+
   return (
-    <Container>
-      <Title size="md">{safe.safeAddress}</Title>
-      {submitting ? (
-        <>
-          <Loader size="md" />
-          <br />
-          <Button
-            size="lg"
-            color="secondary"
-            onClick={() => {
-              setSubmitting(false);
-            }}
-          >
-            Cancel
-          </Button>
-        </>
+    <div>
+
+      {setupDone ? (
+        <Title size="md">{safe.safeAddress}</Title>       
       ) : (
-        <Button size="lg" color="primary" onClick={submitTx}>
-          Submit
-        </Button>
+      <Setup
+        safe={safe}
+        sdk={sdk}
+        ethBalance={ethBalance}
+      />
+      
       )}
-    </Container>
+
+    </div>
+    
   );
 };
 
 export default App;
+
