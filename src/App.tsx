@@ -1,4 +1,5 @@
 import React, { useCallback, useState, useEffect } from 'react';
+import {ethers} from 'ethers';
 import styled from 'styled-components';
 import { Button, Loader, Title, Layout } from '@gnosis.pm/safe-react-components';
 import { useSafeAppsSDK } from '@gnosis.pm/safe-apps-react-sdk';
@@ -20,7 +21,7 @@ const App: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [setupDone, setSetupDone] = useState(false);
 
-  const [ethBalance, setEthBalance] = useState(0);
+  const [ethBalance, setEthBalance] = useState("");
 
   useEffect(() => {
     getBalance()
@@ -54,7 +55,7 @@ const App: React.FC = () => {
     const temp = await sdk.getSafeInfo();
     const address = temp.safeAddress;
     const res = await sdk.eth.getBalance([address]);
-    const balance = parseFloat(res);
+    const balance = ethers.utils.formatEther(ethers.BigNumber.from(res))
     setEthBalance(balance);
 }
 
